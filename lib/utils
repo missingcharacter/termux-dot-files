@@ -89,20 +89,17 @@ function install_if_not_installed() {
   local COMMAND="${2}"
   local -A LIST_COMMAND=(
     ['apt']="sudo apt list --installed 2>/dev/null | grep -v 'Listing' | cut -d '/' -f1"
-    ['brew']='brew list'
-    ['brewcask']='brew list --cask'
+    ['pkg']="pkg list-installed 2>/dev/null | grep -v 'Listing' | cut -d '/' -f1"
     ['code']='code --list-extensions'
     ['pip3']='pip3 list --format=freeze | cut -d '=' -f1')
   local -A INSTALL_COMMAND=(
     ['apt']="sudo DEBIAN_FRONTEND='noninteractive' apt install -y"
-    ['brew']='brew install'
-    ['brewcask']='brew install --cask'
+    ['pkg']="DEBIAN_FRONTEND='noninteractive' pkg install -y"
     ['code']='code --install-extension'
     ['pip3']='pip3 install --upgrade')
   local -A INSTALL_COMMAND_TYPE=(
     ['apt']="multiple"
-    ['brew']='multiple'
-    ['brewcask']='multiple'
+    ['pkg']="multiple"
     ['code']='single'
     ['pip3']='multiple')
   local INSTALLED_TOOLS=( $(bash -c "${LIST_COMMAND[${COMMAND}]}") )

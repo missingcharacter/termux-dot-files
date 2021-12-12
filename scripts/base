@@ -13,7 +13,7 @@ function are_basics_installed() {
   msg_info 'Will run pkg upgrade'
   pkg upgrade
   msg_info 'Will try to install termux basics'
-  install_if_not_installed TERMUX_BASICS 'apt' "${USER_REPLY}"
+  install_if_not_installed TERMUX_BASICS 'pkg' "${USER_REPLY}"
 }
 
 function is_asdf_installed() {
@@ -25,7 +25,7 @@ function is_asdf_installed() {
     local ASDF_DEPS=('autoconf' 'automake' 'libbz2-dev' 'libffi-dev' 'libncurses5-dev' 'libreadline-dev' 'libsqlite3-dev' 'libssl-dev' 'libtool' 'libxslt1-dev' 'libyaml-dev' 'unixodbc-dev' 'unzip')
     are_basics_installed "${USER_REPLY}"
     msg_info 'Will try to install asdf dependencies'
-    install_if_not_installed ASDF_DEPS 'apt' "${USER_REPLY}"
+    install_if_not_installed ASDF_DEPS 'pkg' "${USER_REPLY}"
     msg_info 'Will try to install asdf using git'
     git_install_asdf "${USER_REPLY}"
   fi
