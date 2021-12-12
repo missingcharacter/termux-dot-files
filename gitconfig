@@ -1,0 +1,105 @@
+[apply]
+    whitespace = fix
+[color]
+    ui = auto
+[color "branch"]
+    current = yellow reverse
+    local = yellow
+    remote = green
+[color "diff"]
+    meta = yellow bold
+    frag = magenta bold
+    old = red bold
+    new = green bold
+[color "status"]
+    added = yellow
+    changed = green
+    untracked = cyan
+[merge]
+    log = true
+[push]
+    ; "simple" avoid headaches, specially if you use `--force` w/o specifying branch
+    ; see: http://stackoverflow.com/questions/13148066/warning-push-default-is-unset-its-implicit-value-is-changing-in-git-2-0
+    default = simple
+[core]
+    editor = vim
+    whitespace = fix,-indent-with-non-tab,trailing-space,cr-at-eol
+    excludesfile = ~/.gitignore_global
+    ; setting the editor fixes git commit bug http://tooky.co.uk/2010/04/08/there-was-a-problem-with-the-editor-vi-git-on-mac-os-x.html
+[web]
+    browser = google-chrome
+[rerere]
+    enabled = 1
+    autoupdate = 1
+[diff]
+    tool = vimdiff
+    wsErrorHighlight = all
+[alias]
+    ###########################################
+    # The essentials from http://www.theodo.fr/blog/2017/06/git-game-advanced-git-aliases/
+    ###########################################
+    # -sb for a less verbose status
+    st = status -sb
+    # Easy commits fixup. To use with git rebase -i --autosquash
+    fixup = commit --fixup
+    # If you use Hub by Github
+    ci = ci-status
+
+    ###########################################
+    # The command line sugar
+    ###########################################
+    # Pop your last commit out of the history! No change lost, just unindexed
+    pop = reset HEAD^
+    # Fix your last commit without prompting an editor
+    oops = commit --amend --no-edit
+    # Add a file/directory to your .gitignore
+    ignore = "!f() { echo \"$1\" >> .gitignore; }; f"
+    # A more concise and readable git log
+    ls = log --pretty=format:"%C(yellow)%h\\ %Creset%s%Cblue\\ [%cn]\\%Cred%d" --decorate
+    # Same as above, with files changed in each commit
+    ll = ls --numstat
+    # Print the last commit title & hash
+    last = --no-pager log -1 --oneline --color
+
+    ###########################################
+    # This much sugar may kill you
+    ###########################################
+    # Show which commits are safe to amend/rebase
+    unpushed = log @{u}..
+    # Show what you've done since yesterday to prepare your standup
+    standup = log --since yesterday --author $(git config user.email) --pretty=short
+    # Show the history difference between a local branche and its remote
+    divergence = log --left-right --graph --cherry-pick --oneline $1...origin/$1
+    # Quickly solve conflicts using an editor and then add the conflicted files
+    edit-unmerged = "!f() { git diff --name-status --diff-filter=U | cut -f2 ; }; vim `f`"
+    add-unmerged = "!f() { git diff --name-status --diff-filter=U | cut -f2 ; }; git add `f`"
+
+    ###########################################
+    # My aliases
+    ###########################################
+    # Pull before pushing
+    safepush = ! git pull --rebase && git push
+    # show merge tree + commits info
+    graph = log --graph --date-order -C -M --pretty=format:\"<%h> %ad [%an] %Cgreen%d%Creset %s\" --all --date=short
+    lg = log --graph --pretty=format:'%Cred%h%Creset %C(yellow)%an%d%Creset %s %Cgreen(%cr)%Creset' --date=relative
+    # basic logging for quick browsing
+    ls = log --pretty=format:"%C(yellow)%h%Cred%d\\ %Creset%s%Cgreen\\ [%cn]" --decorate
+    ll = log --pretty=format:"%C(yellow)%h%Cred%d\\ %Creset%s%Cgreen\\ [%cn]" --decorate --numstat
+    # log + file diff
+    fl = log -u
+    # find paths that matches the string
+    f = "!git ls-files | grep -i"
+    # delete all merged branches
+    # dm = !git branch --merged | grep -v "\*" | xargs -n 1 git branch -d
+    # shortcuts
+    cp = cherry-pick
+    st = status -s
+    cl = clone
+    ci = commit
+    co = checkout
+    br = branch
+    dc = diff --cached
+[pull]
+	rebase = true
+[init]
+	defaultBranch = main

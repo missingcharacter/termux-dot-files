@@ -1,0 +1,44 @@
+#!/data/data/com.termux/files/usr/bin/env bash
+# Enables [strict mode] for Bash, based off [unofficial bash strict mode].
+# Errors will kill the program.  Accessing undefined variables will cause
+# errors (and exit the program).  Commands in pipelines that return a non-zero
+# status code will also cause errors and kill the program.  An ERR trap is also
+# enabled that will produce a stack trace when errors happen.
+#
+# This is intended to be used at the beginning of your shell scripts in order
+# to ensure correctness in your programming.
+#
+# Please check out the detailed explanation of [strict mode] for further
+# information.
+#
+# Examples
+#
+#   #!/data/data/com.termux/files/usr/bin/env bash
+#   . /path/to/strict-mode
+#   strictMode
+#
+# [unofficial bash strict mode]: http://redsymbol.net/articles/unofficial-bash-strict-mode/
+#
+# [strict mode]: https://github.com/tests-always-included/wick/blob/master/doc/bash-strict-mode.md
+#
+# Returns nothing.
+function strictMode() {
+    local GITROOT=$(git rev-parse --show-toplevel)
+    set -eEu -o pipefail
+    shopt -s extdebug
+    IFS=$'\n\t'
+    . ${GITROOT}/lib/strict-mode-fail
+    trap 'strictModeFail $?' ERR
+}
+
+function disableStrictMode() {
+  # Allow commands to fail silently
+  set +e
+  # Allow access undefined variables
+  set +u
+  # Return the status of the last command in a pipe even if
+  # an earlier command fails
+  set +o pipefail
+  # Deactivating ERR trap
+  trap - ERR
+}

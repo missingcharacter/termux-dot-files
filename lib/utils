@@ -1,0 +1,242 @@
+#!/data/data/com.termux/files/usr/bin/env bash
+GITROOT=$(git rev-parse --show-toplevel)
+. ${GITROOT}/lib/strict-mode
+strictMode
+
+ANSI_NO_COLOR=$'\033[0m'
+
+function msg_info () {
+  local GREEN=$'\033[0;32m'
+  printf "%s\n" "${GREEN}${*}${ANSI_NO_COLOR}"
+}
+
+function msg_warn () {
+  local YELLOW=$'\033[0;33m'
+  printf "%s\n" "${YELLOW}${*}${ANSI_NO_COLOR}"
+}
+
+function msg_fatal () {
+  local RED=$'\033[0;31m'
+  printf "%s\n" "${RED}${*}${ANSI_NO_COLOR}"
+}
+
+function retry_command() {
+  # Source: https://github.com/aws-quickstart/quickstart-linux-utilities/blob/master/quickstart-cfn-tools.source#L413-L433
+  # $1 = NumberOfRetries $2 = Command
+  # retry_command 10 some_command.sh
+  # Command will retry with linear back-off
+  local -r __tries="${1}"; shift
+  local -r __run="${@}"
+  local -i __backoff_delay=2
+  until ${__run}
+    do
+      if (( __current_try == __tries ))
+      then
+        echo "Tried ${__current_try} times and failed!"
+        return 1
+      else
+        echo "Retrying ...."
+        sleep $((((__backoff_delay++)) + ((__current_try++))))
+      fi
+    done
+}
+
+function array_contains() {
+  # Source: https://stackoverflow.com/questions/14366390/check-if-an-element-is-present-in-a-bash-array/14367368#14367368
+  # How to:
+  # arr=(a b c 'd e' f g)
+  # array_contains arr 'a b' && echo yes || echo no # no
+  # array_contains arr 'd e' && echo yes || echo no # yes
+  local ARRAY="$1[@]"
+  local SEEKING=${2}
+  local IN=1
+  local ELEMENT
+  for ELEMENT in "${!ARRAY}"; do
+    if [[ ${ELEMENT} == "${SEEKING}" ]]; then
+      IN=0
+      break
+    fi
+  done
+  return ${IN}
+}
+
+function is_subarray_in_array() {
+  # How to:
+  # arr=(a b c 'd e' f g)
+  # sub_arr=(b c)
+  # not_sub_arr=(g h)
+  # is_subarray_in_array arr sub_arr  && echo yes || echo no     # yes
+  # is_subarray_in_array arr not_sub_arr  && echo yes || echo no # no
+  local ARRAY="${1}"
+  local SUB_ARRAY="$2[@]"
+  local IN=0
+  local ELEMENT
+  for ELEMENT in "${!SUB_ARRAY}"; do
+    array_contains ${ARRAY} ${ELEMENT} && IN=0 || IN=1
+    if [[ ${IN} -eq 1 ]]; then
+      break
+    fi
+  done
+  return ${IN}
+}
+
+function install_if_not_installed() {
+  # How to:
+  # arr=('build-essential' 'curl' 'file' 'git')
+  # install_if_not_installed arr 'apt'
+  local -n EXTRA_TOOLS="${1}"
+  local EXPANDED_EXTRA_TOOLS="${EXTRA_TOOLS[@]}"
+  local COMMAND="${2}"
+  local -A LIST_COMMAND=(
+    ['apt']="sudo apt list --installed 2>/dev/null | grep -v 'Listing' | cut -d '/' -f1"
+    ['brew']='brew list'
+    ['brewcask']='brew list --cask'
+    ['code']='code --list-extensions'
+    ['pip3']='pip3 list --format=freeze | cut -d '=' -f1')
+  local -A INSTALL_COMMAND=(
+    ['apt']="sudo DEBIAN_FRONTEND='noninteractive' apt install -y"
+    ['brew']='brew install'
+    ['brewcask']='brew install --cask'
+    ['code']='code --install-extension'
+    ['pip3']='pip3 install --upgrade')
+  local -A INSTALL_COMMAND_TYPE=(
+    ['apt']="multiple"
+    ['brew']='multiple'
+    ['brewcask']='multiple'
+    ['code']='single'
+    ['pip3']='multiple')
+  local INSTALLED_TOOLS=( $(bash -c "${LIST_COMMAND[${COMMAND}]}") )
+  local USER_REPLY="${3:-''}"
+
+  # Check if extra tools are installed
+  if ! $(is_subarray_in_array INSTALLED_TOOLS EXTRA_TOOLS); then
+    msg_info 'Seems like some (or all) the tools are missing'
+    if [[ "${USER_REPLY}" == 'y' ]]; then
+      msg_info 'I will install them righ away'
+    elif [[ "${USER_REPLY}" == 'n' ]]; then
+      msg_warn 'You already said no, I will not install them'
+    else
+      read -p 'Want me to install them? ' -n 1 -r USER_REPLY
+    fi
+    echo
+    if [[ ${USER_REPLY} =~ ^[Yy]$ ]]; then
+      if [[ "${INSTALL_COMMAND_TYPE[${COMMAND}]}" == 'multiple' ]]; then
+        bash -c "${INSTALL_COMMAND[${COMMAND}]} ${EXPANDED_EXTRA_TOOLS}"
+      elif [["${INSTALL_COMMAND_TYPE[${COMMAND}]}" == 'single'  ]]; then
+        bash -c "echo ${EXPANDED_EXTRA_TOOLS} | xargs -L1 ${INSTALL_COMMAND[${COMMAND}]}"
+      fi
+    fi
+  fi
+}
+
+function get_git_tags() {
+  # How to:
+  # repo_url="https://github.com/JetBrains/kotlin"
+  # tags_from_repo=( $(get_git_tags ${repo_url}) )
+  # echo "latest tag from ${repo_url} is: ${tags_from_repo[-1]}"
+  local VERSION_REGEX='([0-9]*)\.(.*)'
+  local REPO_URL="${1}"
+  local TAG
+  for TAG in $(git ls-remote --tags --refs "${REPO_URL}"); do
+    if [[ ${TAG} =~ refs/tags/v${VERSION_REGEX}$ ]]; then
+      echo "${BASH_REMATCH[1]}.${BASH_REMATCH[2]}"
+    fi
+  done \
+      | LC_ALL=C sort -t '.' -k 1,1n -k 2,2n -k 3,3n -k 4,4d -k 5,5d
+}
+
+function git_install_asdf() {
+  # How to:
+  # only to be used within is_asdf_installed function
+  # in ${GITROOT}/(Ubuntu|MacOS)/base
+  local USER_REPLY="${1:-''}"
+  msg_info 'Seems like asdf is not installed'
+  if [[ "${USER_REPLY}" == 'y' ]]; then
+    msg_info 'I will install it righ away'
+  elif [[ "${USER_REPLY}" == 'n' ]]; then
+    msg_warn 'You already said no, I will not install it'
+  else
+    read -p 'Want me to install it? ' -n 1 -r USER_REPLY
+  fi
+  echo
+  if [[ ${USER_REPLY} =~ ^[Yy]$ ]]; then
+    local ASDF_REPO="https://github.com/asdf-vm/asdf.git"
+    local ASDF_TAGS=( $(get_git_tags ${ASDF_REPO}) )
+    git clone https://github.com/asdf-vm/asdf.git ~/.asdf --branch "v${ASDF_TAGS[-1]}"
+    disableStrictMode
+    . ${HOME}/.asdf/asdf.sh
+    . ${HOME}/.asdf/completions/asdf.bash
+    strictMode
+  fi
+}
+
+function install_asdf_tool_versions() {
+  # How to:
+  # only to be used after asdf has been installed and asdf's:
+  # `${HOME}/.asdf/shims:${HOME}/.asdf/bin`
+  # are in ${PATH}
+  local TOOLS_VERSIONS="${HOME}/.tool-versions"
+  msg_info 'Installing asdf plugins'
+  local PLUGINS=( $(awk '{ print $1 }' ${TOOLS_VERSIONS} | grep -v '#') )
+  for PLUGIN in "${PLUGINS[@]}"; do
+    case "${PLUGIN}" in
+      aws-iam-authenticator)
+        install_asdf_tool "${PLUGIN}" 'https://github.com/stefansedich/asdf-aws-iam-authenticator' ;;
+      nodejs)
+        install_asdf_tool "${PLUGIN}"
+        bash ${HOME}/.asdf/plugins/nodejs/bin/import-release-team-keyring ;;
+      *)
+        install_asdf_tool "${PLUGIN}" ;;
+    esac
+    local VERSION="$(grep "${PLUGIN} " ${TOOLS_VERSIONS} | awk '{ print $2 }')"
+    install_asdf_tool_version "${PLUGIN}" "${VERSION}"
+  done
+}
+
+function install_asdf_tool() {
+  local PLUGIN="${1}"
+  local PLUGIN_REPO="${2:- }"
+  local COMMAND="asdf plugin add ${PLUGIN} ${PLUGIN_REPO}"
+  if eval "${COMMAND}" &> /dev/null; then
+    msg_info "asdf plugin ${PLUGIN} was installed"
+  else
+    msg_warn "asdf plugin ${PLUGIN} was not installed"
+  fi
+}
+
+function install_asdf_tool_version() {
+  local PLUGIN="${1}"
+  local VERSION="${2}"
+  local CATCH_OUTPUT=$(mktemp install_asdf_tool_versions.XXXXXXX)
+  if asdf install ${PLUGIN} ${VERSION} &> "${CATCH_OUTPUT}"; then
+    msg_info "Installed ${PLUGIN} version in ${TOOLS_VERSIONS}"
+    rm -f "${CATCH_OUTPUT}"
+  else
+    msg_warn "I was not able to ${PLUGIN} version in ${TOOLS_VERSIONS} error, error is below:"
+    msg_warn "$(cat "${CATCH_OUTPUT}")"
+    rm -f "${CATCH_OUTPUT}"
+    return 1
+  fi
+}
+
+function write_direnvrc() {
+    msg_info 'Creating file ~/.config/direnv/direnvrc'
+  cat <<'EOF' > ${HOME}/.config/direnv/direnvrc
+source "$(asdf direnv hook asdf)"
+
+# Uncomment the following line to make direnv silent by default.
+#export DIRENV_LOG_FORMAT=""
+EOF
+}
+
+function configure_direnv() {
+  local DIRENV_CONFIG_FOLDER="${HOME}/.config/direnv"
+  if [[ ! -e "${DIRENV_CONFIG_FOLDER}" ]]; then
+    msg_info "${DIRENV_CONFIG_FOLDER} does not exist, I will create it"
+    mkdir "${DIRENV_CONFIG_FOLDER}"
+  fi
+  if [[ ! -e "${DIRENV_CONFIG_FOLDER}/direnvrc" ]]; then
+    msg_info "${DIRENV_CONFIG_FOLDER}/direnvrc does not exist, I'll create it now"
+    write_direnvrc
+  fi
+}
