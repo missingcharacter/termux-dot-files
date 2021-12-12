@@ -18,7 +18,7 @@ function are_basics_installed() {
 
 function is_asdf_installed() {
   local USER_REPLY="${1:-''}"
-  if [[ ! -x $(which asdf) ]]; then
+  if [[ ! -x $(command -v asdf) ]]; then
     # Ubuntu 18.04 `apt install -y libncurses-dev libxslt-dev` gives the output below
     # Note, selecting 'libncurses5-dev' instead of 'libncurses-dev'
     # Note, selecting 'libxslt1-dev' instead of 'libxslt-dev'
