@@ -11,6 +11,7 @@ file
 findutils
 fontconfig-utils
 git
+golang
 inetutils
 lld
 llvm
@@ -23,6 +24,7 @@ openssh
 patch
 patchelf
 procps
+python
 renameutils
 sharutils
 termux-am

@@ -1,4 +1,6 @@
 export EDITOR=vim
+export CC='clang'
+export CXX='clang++'
 
 . $HOME/.asdf/asdf.sh
 . $HOME/.asdf/completions/asdf.bash
