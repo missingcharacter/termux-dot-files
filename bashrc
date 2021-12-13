@@ -1,6 +1,6 @@
 export EDITOR=vim
-export CC='clang'
-export CXX='clang++'
+export CXX='/data/data/com.termux/files/usr/bin/aarch64-linux-android-g++'
+export CC='/data/data/com.termux/files/usr/bin/aarch64-linux-android-gcc'
 
 . $HOME/.asdf/asdf.sh
 . $HOME/.asdf/completions/asdf.bash

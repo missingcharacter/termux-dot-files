@@ -16,6 +16,7 @@ inetutils
 lld
 llvm
 lsof
+ltrace
 moreutils
 ncurses-utils
 neofetch
