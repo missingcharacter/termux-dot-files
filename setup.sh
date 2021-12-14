@@ -81,3 +81,33 @@ function link_if_not_exists() {
 for LINK in ${LINKS[@]}; do
   link_if_not_exists ${LINK}
 done
+
+# Install everything else
+function install_everything_else() {
+  # Install asdf plugins and tools' versions
+  install_asdf_tool_versions
+  configure_direnv
+
+  msg_info "Sourcing ${HOME}/.bashrc"
+  disableStrictMode
+  . ${HOME}/.bashrc
+  strictMode
+
+  # Running post-install steps
+  . ${GITROOT}/scripts/post-install
+}
+
+if [[ "${INSTALL_EVERYTHING:-''}" == 'y' ]]; then
+  install_everything_else
+  msg_info "I'm done!"
+elif [[ "${INSTALL_EVERYTHING:-''}" == 'n' ]]; then
+  msg_info "I'm done!"
+else
+  read -p "Want me to install everything else? " -n 1 -r USER_REPLY
+  echo
+  if [[ ${USER_REPLY} =~ ^[Yy]$ ]]; then
+    install_everything_else
+  else
+    msg_info "I'm done!"
+  fi
+fi

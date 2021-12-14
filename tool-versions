@@ -2,4 +2,3 @@
 ruby 2.6.8
 # tools
 direnv 2.29.0
-saml2aws 2.33.0
