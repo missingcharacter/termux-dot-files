@@ -9,6 +9,7 @@ strictMode
 # shellcheck disable=SC1091
 . "${GITROOT}"/lib/utils
 
+# Hosts URLs source https://git.frostnerd.com/PublicAndroidApps/smokescreen/-/blob/master/app/src/main/java/com/frostnerd/smokescreen/fragment/DnsRuleFragment.kt#L691-719
 declare -a HOSTS_URLS=(
   'https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts'
   'https://adaway.org/hosts.txt'
