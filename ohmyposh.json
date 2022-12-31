@@ -5,15 +5,15 @@
       "alignment": "left",
       "segments": [
         {
-          "type": "os",
-          "style": "powerline",
-          "powerline_symbol": "\uE0B0",
-          "foreground": "#fff",
           "background": "#003543",
+          "foreground": "#fff",
+          "powerline_symbol": "\ue0b0",
           "properties": {
-            "windows": "\uF179",
-            "postfix": ""
-          }
+            "postfix": "",
+            "windows": "\uf179"
+          },
+          "style": "powerline",
+          "type": "os"
         },
         {
           "background": "#003543",

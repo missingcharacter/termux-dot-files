@@ -1,31 +1,27 @@
 #!/data/data/com.termux/files/usr/bin/env bash
 # Enable bash's unofficial strict mode
 GITROOT=$(git rev-parse --show-toplevel)
-. ${GITROOT}/lib/strict-mode
+# shellcheck disable=SC1091
+. "${GITROOT}"/lib/strict-mode
 strictMode
-. ${GITROOT}/lib/utils
+# shellcheck disable=SC1091
+. "${GITROOT}"/lib/utils
 
-THIS_SCRIPT=$(basename $0)
-PADDING=$(printf %-${#THIS_SCRIPT}s " ")
+THIS_SCRIPT=$(basename "${0}")
+#PADDING=$(printf %-${#THIS_SCRIPT}s " ")
 
 function usage() {
     msg_info "Usage:"
     msg_info "${THIS_SCRIPT} -i <Optional, 'y' or 'n'>"
     echo
-    msg_info "Sets up base termux system" >&2
-    msg_info "-i avoids asking you every time if you want to install something or not" >&2
-    exit 1
+    msg_error "Sets up base termux system"
+    msg_fatal "-i avoids asking you every time if you want to install something or not"
 }
 
-function check_dependencies() {
-  # Ensure dependencies are present
-  if [[ ! -x $(command -v git) ]]; then
-      msg_fatal "[-] Dependencies unmet. Please verify that the following are installed and in the PATH: git" >&2
-      exit 1
-  fi
-}
-
-check_dependencies
+# Ensure dependencies are present
+if ! command -v git &>/dev/null; then
+    msg_fatal "[-] Dependencies unmet. Please verify that the following are installed and in the PATH: git"
+fi
 
 UNAME_OUTPUT=$(uname -s)
 case "${UNAME_OUTPUT}" in
@@ -33,15 +29,14 @@ case "${UNAME_OUTPUT}" in
       msg_info "I will continue"
       ;;
     *)
-      msg_fatal "UNKNOWN OS: ${UNAME_OUTPUT}" >&2
-      exit 1
+      msg_fatal "UNKNOWN OS: ${UNAME_OUTPUT}"
 esac
 
 while getopts ":i:" opt; do
   case ${opt} in
     i)
       if [[ "$OPTARG" == "y" || "$OPTARG" == "n" ]]; then
-        INSTALL_EVERYTHING=${OPTARG}
+        INSTALL_EVERYTHING="${OPTARG}"
       else
         usage
       fi ;;
@@ -53,7 +48,8 @@ while getopts ":i:" opt; do
 done
 
 # Installing basics
-. ${GITROOT}/scripts/base
+# shellcheck disable=SC1091
+. "${GITROOT}"/scripts/base
 is_asdf_installed "${INSTALL_EVERYTHING:-''}"
 
 # Actual dot-files
@@ -70,16 +66,16 @@ function link_if_not_exists() {
     read -p "Want me to overwrite it? " -n 1 -r USER_REPLY
     echo
     if [[ ${USER_REPLY} =~ ^[Yy]$ ]]; then
-      ln -sf ${SOURCE_FILE} ${TARGET_FILE}
+      ln -sf "${SOURCE_FILE}" "${TARGET_FILE}"
     fi
   else
     msg_info "Creating ${TARGET_FILE} symlink"
-    ln -s ${SOURCE_FILE} ${TARGET_FILE}
+    ln -s "${SOURCE_FILE}" "${TARGET_FILE}"
   fi
 }
 
-for LINK in ${LINKS[@]}; do
-  link_if_not_exists ${LINK}
+for LINK in "${LINKS[@]}"; do
+  link_if_not_exists "${LINK}"
 done
 
 # Install everything else
@@ -90,11 +86,13 @@ function install_everything_else() {
 
   msg_info "Sourcing ${HOME}/.bashrc"
   disableStrictMode
-  . ${HOME}/.bashrc
+  # shellcheck disable=SC1091
+  . "${HOME}"/.bashrc
   strictMode
 
   # Running post-install steps
-  . ${GITROOT}/scripts/post-install
+  # shellcheck disable=SC1091
+  . "${GITROOT}"/scripts/post-install
 }
 
 if [[ "${INSTALL_EVERYTHING:-''}" == 'y' ]]; then

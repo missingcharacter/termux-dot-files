@@ -23,11 +23,13 @@
 #
 # Returns nothing.
 function strictMode() {
-    local GITROOT=$(git rev-parse --show-toplevel)
+    local GITROOT
+    GITROOT=$(git rev-parse --show-toplevel)
     set -eEu -o pipefail
     shopt -s extdebug
     IFS=$'\n\t'
-    . ${GITROOT}/lib/strict-mode-fail
+    # shellcheck disable=SC1091
+    . "${GITROOT}"/lib/strict-mode-fail
     trap 'strictModeFail $?' ERR
 }
 

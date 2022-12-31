@@ -1,19 +1,21 @@
 #!/data/data/com.termux/files/usr/bin/env bash
 # Enable bash's unofficial strict mode
 GITROOT=$(git rev-parse --show-toplevel)
-. ${GITROOT}/lib/strict-mode
+# shellcheck disable=SC1091
+. "${GITROOT}"/lib/strict-mode
 strictMode
 # Enabling utils
-. ${GITROOT}/lib/utils
+# shellcheck disable=SC1091
+. "${GITROOT}"/lib/utils
 
 function are_basics_installed() {
   local USER_REPLY="${1:-''}"
-  declare -a TERMUX_BASICS
-  TERMUX_BASICS=( $(cat ${GITROOT}/pkg/base.txt) )
+  declare -a TERMUX_BASICS=()
+  mapfile -t TERMUX_BASICS < <(cat "${GITROOT}"/pkg/base.txt)
   msg_info 'Will run pkg upgrade'
   pkg upgrade
   msg_info 'Will try to install termux basics'
-  install_if_not_installed TERMUX_BASICS 'pkg' "${USER_REPLY}"
+  install_if_not_installed 'pkg' "${USER_REPLY}" "${TERMUX_BASICS[@]}"
 }
 
 function is_asdf_installed() {
@@ -25,7 +27,7 @@ function is_asdf_installed() {
     local ASDF_DEPS=('autoconf' 'automake' 'libbz2-dev' 'libffi-dev' 'libncurses5-dev' 'libreadline-dev' 'libsqlite3-dev' 'libssl-dev' 'libtool' 'libxslt1-dev' 'libyaml-dev' 'unixodbc-dev' 'unzip')
     are_basics_installed "${USER_REPLY}"
     msg_info 'Will try to install asdf dependencies'
-    install_if_not_installed ASDF_DEPS 'pkg' "${USER_REPLY}"
+    install_if_not_installed 'pkg' "${USER_REPLY}" "${ASDF_DEPS[@]}"
     msg_info 'Will try to install asdf using git'
     git_install_asdf "${USER_REPLY}"
   fi

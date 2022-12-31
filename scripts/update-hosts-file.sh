@@ -2,10 +2,12 @@
 #!/data/data/com.termux/files/usr/bin/env bash
 # Enable bash's unofficial strict mode
 GITROOT=$(git rev-parse --show-toplevel)
-. ${GITROOT}/lib/strict-mode
+# shellcheck disable=SC1091
+. "${GITROOT}"/lib/strict-mode
 strictMode
 # Enabling utils
-. ${GITROOT}/lib/utils
+# shellcheck disable=SC1091
+. "${GITROOT}"/lib/utils
 
 declare -a HOSTS_URLS=(
   'https://raw.githubusercontent.com/StevenBlack/hosts/master/hosts'
@@ -18,7 +20,7 @@ declare -a HOSTS_URLS=(
 )
 
 curl -sL "${HOSTS_URLS[@]}" | \
-  sed '/\(local\|^#\|^$\|^[[:space:]]*$\|^255.255.255.255\|^0.0.0.0 0.0.0.0\|^::1\|^ff0[02]:\)/d' | \
+  sed '/\(local\|^#\|^$\|^\s*$\|^\s*#\|^255\.255\.255\.255\|^0\.0\.0\.0 0\.0\.0\.0\|^::1\|^ff0[02]:\)/d' | \
   sed 's!^\(127\|0\)\.0\.0\.\(1\|0\) !!g' | \
   sort -u | \
-  sed 's!^!0.0.0.0 !g'
+  sed 's!^!0\.0\.0\.0 !g'

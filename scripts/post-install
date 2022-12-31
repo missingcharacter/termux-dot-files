@@ -1,11 +1,14 @@
 #!/data/data/com.termux/files/usr/bin/env bash
 # Enable bash's unofficial strict mode
 GITROOT=$(git rev-parse --show-toplevel)
-. ${GITROOT}/lib/strict-mode
+# shellcheck disable=SC1091
+. "${GITROOT}"/lib/strict-mode
 strictMode
 # Enabling utils
-. ${GITROOT}/lib/utils
-. ${GITROOT}/scripts/base
+# shellcheck disable=SC1091
+. "${GITROOT}"/lib/utils
+# shellcheck disable=SC1091
+. "${GITROOT}"/scripts/base
 
 function download_and_install_deb() {
   local DEB_URL="${1}"
@@ -22,10 +25,9 @@ function download_and_install_deb() {
   fi
 }
 
-declare -A DEB_PACKAGES=(
-  ['python']='https://github.com/Termux-pod/termux-pod/raw/main/aarch64/python/python-3.9.7/python_3.9.7_aarch64.deb'
-)
-
-for KEY in "${!DEB_PACKAGES[@]}"; do
-  download_and_install_deb "${DEB_PACKAGES[${KEY}]}" "${KEY}"
-done
+#declare -A DEB_PACKAGES=(
+#)
+#
+#for KEY in "${!DEB_PACKAGES[@]}"; do
+#  download_and_install_deb "${DEB_PACKAGES[${KEY}]}" "${KEY}"
+#done
