@@ -26,6 +26,95 @@ function msg_fatal() {
   exit 1
 }
 
+function create_dir_if_not_exists() {
+  local DIR="${1}"
+  if [[ ! -d "${DIR}" ]]; then
+    msg_info "Creating ${DIR} dir"
+    mkdir "${DIR}"
+  fi
+}
+
+function check_termux() {
+  if [ "$(pgrep -fc 'com.termux' )" -gt 0 ]; then
+    msg_fatal "Only termux is supporter" >&2
+  fi
+}
+
+function get_operatingsystem() {
+  local kernel_name
+  kernel_name="$(uname)"
+  case "${kernel_name}" in
+    Linux)
+      check_termux
+      echo -n 'termux'
+      ;;
+    *)
+      msg_fatal "Sorry, ${kernel_name} is not supported."
+      ;;
+  esac
+}
+
+function source_asdf() {
+  disableStrictMode
+  # shellcheck disable=SC1091
+  . "${HOME}"/.asdf/asdf.sh
+  # shellcheck disable=SC1091
+  . "${HOME}"/.asdf/completions/asdf.bash
+  strictMode
+}
+
+function return_non_empty_array() {
+  declare -a INPUT
+  INPUT=("${@}")
+  if [[ ${#INPUT[@]} -ne 0 ]]; then
+    printf "%s\n" "${INPUT[@]}"
+  fi
+}
+
+function link_if_not_exists() {
+  local FILE="${1}"
+  local LINK="${2}"
+  if [[ -L "${LINK}" || -e "${LINK}" ]]; then
+    local ASK_OVERWRITE
+    ASK_OVERWRITE="$(get_user_reply "${LINK} exists, Want me to overwrite it?")"
+    echo
+    if [[ ${ASK_OVERWRITE} =~ ^[Yy]$ ]]; then
+      ln -sf "${FILE}" "${LINK}"
+    fi
+  else
+    msg_info "Creating ${FILE} symlink"
+    ln -s "${FILE}" "${LINK}"
+  fi
+}
+
+function get_user_reply() {
+  local QUESTION="${1}"
+  local RESET="\033[0m"
+  local BOLD="\033[1m"
+  local YELLOW="\033[38;5;11m"
+  local USER_REPLY
+  read -p "$(echo -e "${BOLD}${YELLOW}${QUESTION}${RESET}[Y or N] ")" -n 1 -r USER_REPLY
+  echo -n "${USER_REPLY}"
+}
+
+# Install everything else
+function install_everything_else() {
+  # Install asdf plugins and tools' versions
+  install_asdf_tool_versions
+  configure_direnv
+  hash -r
+
+  msg_info "Sourcing ${HOME}/.bashrc"
+  disableStrictMode
+  # shellcheck disable=SC1091
+  . "${HOME}"/.bashrc
+  strictMode
+
+  # Running post-install steps
+  # shellcheck disable=SC1090,SC1091
+  . "${GITROOT}/${MACHINE_OS}/post-install"
+}
+
 function retry_command() {
   # Source: https://github.com/aws-quickstart/quickstart-linux-utilities/blob/master/quickstart-cfn-tools.source#L413-L433
   # $1 = NumberOfRetries $2 = Command

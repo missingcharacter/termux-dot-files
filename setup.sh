@@ -23,89 +23,51 @@ if ! command -v git &>/dev/null; then
     msg_fatal "[-] Dependencies unmet. Please verify that the following are installed and in the PATH: git"
 fi
 
-UNAME_OUTPUT=$(uname -s)
-case "${UNAME_OUTPUT}" in
-    Linux*)
-      msg_info "I will continue"
-      ;;
-    *)
-      msg_fatal "UNKNOWN OS: ${UNAME_OUTPUT}"
-esac
+MACHINE_OS="$(get_operatingsystem)"
+export DEBIAN_FRONTEND='noninteractive'
 
-while getopts ":i:" opt; do
-  case ${opt} in
-    i)
-      if [[ "$OPTARG" == "y" || "$OPTARG" == "n" ]]; then
-        INSTALL_EVERYTHING="${OPTARG}"
-      else
-        usage
-      fi ;;
-    \?)
-      usage ;;
-    :)
-      usage ;;
+INSTALL_EVERYTHING='n'
+ASK='y'
+while [[ $# -gt 0 ]]; do
+  case "${1}" in
+    -i|--install-everything)
+      INSTALL_EVERYTHING='y'
+      shift # past argument
+      ;;
+    -y|--yes)
+      ASK='n'
+      shift # past argument
+      ;;
+    -h|--help)
+      usage
+      ;;
+    -*)
+      echo "Unknown option ${1}"
+      usage
+      ;;
   esac
 done
 
 # Installing basics
-# shellcheck disable=SC1091
-. "${GITROOT}"/scripts/base
-is_asdf_installed "${INSTALL_EVERYTHING:-''}"
+# shellcheck disable=SC1090,SC1091
+. "${GITROOT}/${MACHINE_OS}/base"
+is_asdf_installed "${ASK:-''}"
 
 # Actual dot-files
-LINKS=('bashrc' 'bash_aliases' 'envrc' 'gitconfig' 'ohmyposh.json' 'tool-versions' 'vimrc')
-
-function link_if_not_exists() {
-  local FILE=${1}
-  local DOT_FILE=${2:-"${FILE}"}
-  local SOURCE_FILE="${GITROOT}/${FILE}"
-  local TARGET_FILE="${HOME}/.${DOT_FILE}"
-  if [[ -L "${TARGET_FILE}" || -e "${TARGET_FILE}" ]]; then
-    local USER_REPLY
-    msg_warn "${TARGET_FILE} exists" >&2
-    read -p "Want me to overwrite it? " -n 1 -r USER_REPLY
-    echo
-    if [[ ${USER_REPLY} =~ ^[Yy]$ ]]; then
-      ln -sf "${SOURCE_FILE}" "${TARGET_FILE}"
-    fi
-  else
-    msg_info "Creating ${TARGET_FILE} symlink"
-    ln -s "${SOURCE_FILE}" "${TARGET_FILE}"
-  fi
-}
+declare -a LINKS=('bashrc'
+'bash_aliases'
+'envrc'
+'gitconfig'
+'ohmyposh.json'
+'tool-versions'
+'vimrc')
 
 for LINK in "${LINKS[@]}"; do
-  link_if_not_exists "${LINK}"
+  link_if_not_exists "${GITROOT}/${LINK}" "${HOME}/.${LINK}"
 done
 
-# Install everything else
-function install_everything_else() {
-  # Install asdf plugins and tools' versions
-  install_asdf_tool_versions
-  configure_direnv
-
-  msg_info "Sourcing ${HOME}/.bashrc"
-  disableStrictMode
-  # shellcheck disable=SC1091
-  . "${HOME}"/.bashrc
-  strictMode
-
-  # Running post-install steps
-  # shellcheck disable=SC1091
-  . "${GITROOT}"/scripts/post-install
-}
-
-if [[ "${INSTALL_EVERYTHING:-''}" == 'y' ]]; then
+if [[ "${INSTALL_EVERYTHING}" == 'y' ]]; then
   install_everything_else
-  msg_info "I'm done!"
-elif [[ "${INSTALL_EVERYTHING:-''}" == 'n' ]]; then
-  msg_info "I'm done!"
-else
-  read -p "Want me to install everything else? " -n 1 -r USER_REPLY
-  echo
-  if [[ ${USER_REPLY} =~ ^[Yy]$ ]]; then
-    install_everything_else
-  else
-    msg_info "I'm done!"
-  fi
 fi
+
+msg_info "I'm done!"

@@ -1,0 +1,44 @@
+#!/data/data/com.termux/files/usr/bin/env bash
+# Enable bash's unofficial strict mode
+GITROOT=$(git rev-parse --show-toplevel)
+# shellcheck disable=SC1091
+. "${GITROOT}"/lib/strict-mode
+strictMode
+# Enabling utils
+# shellcheck disable=SC1091
+. "${GITROOT}"/lib/utils
+
+function are_basics_installed() {
+  local ASK="${1:-'y'}"
+  declare -a TERMUX_BASICS=()
+  mapfile -t TERMUX_BASICS < <(cat "${GITROOT}"/pkg/base.txt)
+  msg_info 'Will run pkg upgrade'
+  pkg upgrade
+  msg_info 'Will try to install termux basics'
+  install_if_not_installed 'pkg' "${ASK}" "${TERMUX_BASICS[@]}"
+}
+
+function is_asdf_installed() {
+  local ASK="${1:-'y'}"
+  if [[ ! -e "${HOME}/.asdf/asdf.sh" ]]; then
+    declare -a ASDF_DEPS=('autoconf'
+      'automake'
+      'libbz2-dev'
+      'libffi-dev'
+      'libncurses5-dev'
+      'libreadline-dev'
+      'libsqlite3-dev'
+      'libssl-dev'
+      'libtool'
+      'libxslt1-dev'
+      'libyaml-dev'
+      'unixodbc-dev'
+      'unzip')
+    are_basics_installed "${ASK}"
+    msg_info 'Will try to install asdf dependencies'
+    install_if_not_installed 'pkg' "${ASK}" "${ASDF_DEPS[@]}"
+    msg_info 'Will try to install asdf using git'
+    git_install_asdf "${ASK}"
+  fi
+  source_asdf
+}
