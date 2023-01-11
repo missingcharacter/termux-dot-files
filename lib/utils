@@ -35,8 +35,8 @@ function create_dir_if_not_exists() {
 }
 
 function check_termux() {
-  if [ "$(pgrep -fc 'com.termux' )" -gt 0 ]; then
-    msg_fatal "Only termux is supporter" >&2
+  if [ "$(pgrep -fc 'com.termux' )" -le 0 ]; then
+    msg_fatal "Only termux is supported" >&2
   fi
 }
 
