@@ -29,6 +29,7 @@ function is_asdf_installed() {
       'readline'
       'libsqlite'
       'openssl'
+      'openssl-1.1'
       'libtool'
       'libxslt'
       'libyaml'
