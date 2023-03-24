@@ -18,10 +18,11 @@ declare -a HOSTS_URLS=(
   'https://gitlab.com/quidsup/notrack-blocklists/raw/master/notrack-blocklist.txt'
   'https://hblock.molinero.dev/hosts'
   'https://www.netguard.me/hosts'
+  'https://github.com/notracking/hosts-blocklists/raw/master/hostnames.txt'
 )
 
 curl -sL "${HOSTS_URLS[@]}" | \
-  sed '/\(local\|^#\|^$\|^\s*$\|^\s*#\|^255\.255\.255\.255\|^0\.0\.0\.0 0\.0\.0\.0\|^::1\|^ff0[02]:\)/d' | \
+  sed '/\(local\|^#\|^$\|^\s*$\|^\s*#\|^255\.255\.255\.255\|^0\.0\.0\.0 0\.0\.0\.0\|^::\|^ff0[02]:\)/d' | \
   sed 's!^\(127\|0\)\.0\.0\.\(1\|0\) !!g' | \
   sort -u | \
   sed 's!^!0\.0\.0\.0 !g'
