@@ -19,6 +19,7 @@ declare -a HOSTS_URLS=(
   'https://hblock.molinero.dev/hosts'
   'https://www.netguard.me/hosts'
   'https://github.com/notracking/hosts-blocklists/raw/master/hostnames.txt'
+  'https://github.com/jerryn70/GoodbyeAds/raw/master/Hosts/GoodbyeAds.txt'
 )
 
 curl -sL "${HOSTS_URLS[@]}" | \
