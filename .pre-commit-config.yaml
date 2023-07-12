@@ -26,11 +26,11 @@ repos:
         - --autofix
     -   id: requirements-txt-fixer
 - repo: https://github.com/gruntwork-io/pre-commit
-  rev: v0.1.17
+  rev: v0.1.22
   hooks:
     - id: shellcheck
       exclude: '.*\.sh\.j2'
 - repo: https://github.com/igorshubovych/markdownlint-cli
-  rev: v0.32.2
+  rev: v0.35.0
   hooks:
     - id: markdownlint-fix
