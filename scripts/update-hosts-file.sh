@@ -17,13 +17,12 @@ declare -a HOSTS_URLS=(
   'https://zerodot1.gitlab.io/CoinBlockerLists/hosts'
   'https://gitlab.com/quidsup/notrack-blocklists/raw/master/notrack-blocklist.txt'
   'https://hblock.molinero.dev/hosts'
-  'https://www.netguard.me/hosts'
-  'https://github.com/notracking/hosts-blocklists/raw/master/hostnames.txt'
-  'https://github.com/jerryn70/GoodbyeAds/raw/master/Hosts/GoodbyeAds.txt'
+  'https://raw.githubusercontent.com/notracking/hosts-blocklists/master/hostnames.txt'
+  'https://raw.githubusercontent.com/jerryn70/GoodbyeAds/master/Hosts/GoodbyeAds.txt'
 )
 
 curl -sL "${HOSTS_URLS[@]}" | \
-  sed '/\(local\|^#\|^$\|^\s*$\|^\s*#\|^255\.255\.255\.255\|^0\.0\.0\.0 0\.0\.0\.0\|^::\|^ff0[02]:\)/d' | \
+  sed '/\(local\|^#\|^$\|^\s*$\|^\s*#\|^255\.255\.255\.255\|^::\|^ff0[02]:\)/d' | \
   sed 's!^\(127\|0\)\.0\.0\.\(1\|0\) !!g' | \
   sort -u | \
   sed 's!^!0\.0\.0\.0 !g'
