@@ -1,36 +1,45 @@
+---
 repos:
--   repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.4.0
+  - repo: https://github.com/lyz-code/yamlfix/
+    rev: 1.16.0
     hooks:
-    -   id: trailing-whitespace
+      - id: yamlfix
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.5.0
+    hooks:
+      - id: trailing-whitespace
         exclude: '^.docker/'
-    -   id: check-added-large-files
+      - id: check-added-large-files
         args:
-        - --maxkb=512
-    -   id: check-ast
-    -   id: check-case-conflict
-    -   id: check-docstring-first
-    -   id: check-json
+          - --maxkb=512
+      - id: check-ast
+      - id: check-case-conflict
+      - id: check-docstring-first
+      - id: check-json
         exclude: '^.docker/'
-    -   id: check-merge-conflict
-    -   id: check-symlinks
-    -   id: check-xml
-    -   id: check-yaml
-    -   id: debug-statements
-    -   id: detect-private-key
-    -   id: end-of-file-fixer
+      - id: check-merge-conflict
+      - id: check-symlinks
+      - id: check-xml
+      - id: check-yaml
+      - id: debug-statements
+      - id: detect-private-key
+      - id: end-of-file-fixer
         exclude: '^.docker/'
-    -   id: pretty-format-json
+      - id: pretty-format-json
         exclude: '^.docker/'
         args:
-        - --autofix
-    -   id: requirements-txt-fixer
-- repo: https://github.com/gruntwork-io/pre-commit
-  rev: v0.1.22
-  hooks:
-    - id: shellcheck
-      exclude: '.*\.sh\.j2'
-- repo: https://github.com/igorshubovych/markdownlint-cli
-  rev: v0.35.0
-  hooks:
-    - id: markdownlint-fix
+          - --autofix
+      - id: requirements-txt-fixer
+  - repo: https://github.com/gruntwork-io/pre-commit
+    rev: v0.1.23
+    hooks:
+      - id: shellcheck
+        exclude: '.*\.sh\.j2'
+  - repo: https://github.com/igorshubovych/markdownlint-cli
+    rev: v0.38.0
+    hooks:
+      - id: markdownlint-fix
+  - repo: https://github.com/rhysd/actionlint
+    rev: v1.6.26
+    hooks:
+      - id: actionlint-system

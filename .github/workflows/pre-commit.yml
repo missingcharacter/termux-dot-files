@@ -1,0 +1,25 @@
+---
+name: Run pre-commit
+on:
+  push:
+    branches:
+      - develop
+      - main
+  pull_request:
+jobs:
+  pre-commit:
+    name: Run pre-commit
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - name: Install tools
+        shell: bash
+        run: |
+          bash -x ./scripts/github_actions-install_tools.sh
+      - name: run pre-commit
+        uses: pre-commit/action@v3.0.0
