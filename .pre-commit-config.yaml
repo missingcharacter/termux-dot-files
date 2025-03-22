@@ -1,11 +1,11 @@
 ---
 repos:
   - repo: https://github.com/lyz-code/yamlfix/
-    rev: 1.16.0
+    rev: 1.17.0
     hooks:
       - id: yamlfix
   - repo: https://github.com/pre-commit/pre-commit-hooks
-    rev: v4.5.0
+    rev: v5.0.0
     hooks:
       - id: trailing-whitespace
         exclude: '^.docker/'
@@ -31,15 +31,15 @@ repos:
           - --autofix
       - id: requirements-txt-fixer
   - repo: https://github.com/gruntwork-io/pre-commit
-    rev: v0.1.23
+    rev: v0.1.28
     hooks:
       - id: shellcheck
         exclude: '.*\.sh\.j2'
   - repo: https://github.com/igorshubovych/markdownlint-cli
-    rev: v0.38.0
+    rev: v0.44.0
     hooks:
       - id: markdownlint-fix
   - repo: https://github.com/rhysd/actionlint
-    rev: v1.6.26
+    rev: v1.7.7
     hooks:
       - id: actionlint-system
