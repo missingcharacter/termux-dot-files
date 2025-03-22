@@ -21,8 +21,7 @@ declare -a HOSTS_URLS=(
   'https://raw.githubusercontent.com/jerryn70/GoodbyeAds/master/Hosts/GoodbyeAds.txt'
 )
 
-curl -sL "${HOSTS_URLS[@]}" | \
-  sed '/\(local\|^\xEF\xBB\xBF\|^#\|^$\|^\s*$\|^\s*#\|^0\.0\.0\.0\|^255\.255\.255\.255\|^::\|^ff0[02]:\)/d' | \
-  sed 's!^\(127\|0\)\.0\.0\.\(1\|0\) !!g' | \
-  sort -u | \
-  sed 's!^!0\.0\.0\.0 !g'
+for url in "${HOSTS_URLS[@]}"; do
+  echo "URL is ${url}"
+  head -n3 <(curl -sSL "${url}" 2> /dev/null)
+done
